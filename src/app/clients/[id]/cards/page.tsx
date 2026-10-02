@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { SwipeDeck } from "@/components/SwipeDeck";
 import type { Answers, Card, SwipeValue } from "@/lib/types";
 
@@ -13,6 +13,8 @@ export default function CardsPage() {
   const [answers, setAnswers] = useState<Answers>({});
   const [history, setHistory] = useState<string[]>([]);
   const [ready, setReady] = useState(false);
+  const [filling, setFilling] = useState(false);
+  const fillingRef = useRef(false);
 
   useEffect(() => {
     async function load() {
@@ -46,13 +48,15 @@ export default function CardsPage() {
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
-      if (e.ctrlKey && e.altKey && (e.key === "k" || e.key === "K")) {
+      // Use e.code — on macOS Option+K changes e.key to ˚, so key === "k" never matches.
+      if (e.code === "KeyK" && e.ctrlKey && e.altKey) {
         e.preventDefault();
+        e.stopPropagation();
         void skipRandom();
       }
     }
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    window.addEventListener("keydown", onKey, true);
+    return () => window.removeEventListener("keydown", onKey, true);
   });
 
   const cardsById = useMemo(() => {
@@ -79,7 +83,15 @@ export default function CardsPage() {
   }
 
   async function skipRandom() {
-    await persist({}, true);
+    if (fillingRef.current) return;
+    fillingRef.current = true;
+    setFilling(true);
+    try {
+      await persist({}, true);
+    } finally {
+      fillingRef.current = false;
+      setFilling(false);
+    }
   }
 
   function onSwipe(value: SwipeValue) {
@@ -104,29 +116,37 @@ export default function CardsPage() {
 
   if (!ready) {
     return (
-      <main className="mx-auto max-w-lg px-4 sm:px-6 py-16 text-[var(--ink-muted)]">
+      <main className="flex h-dvh items-center justify-center px-4 text-[var(--ink-muted)]">
         Loading cards…
       </main>
     );
   }
 
+  if (!card) {
+    return (
+      <main className="flex h-dvh items-center justify-center px-4 text-[var(--ink-muted)]">
+        Finishing…
+      </main>
+    );
+  }
+
   return (
-    <main className="mx-auto min-h-dvh max-w-lg px-4 sm:px-6 py-8 sm:py-10">
-      <p className="mb-4 text-xs text-[var(--ink-muted)]">
-        Therapist shortcut: Ctrl+Option+K fills remaining cards randomly.
-      </p>
-      {card ? (
-        <SwipeDeck
-          card={card}
-          index={index}
-          total={order.length}
-          canUndo={history.length > 0}
-          onSwipe={onSwipe}
-          onUndo={onUndo}
-        />
-      ) : (
-        <p className="text-[var(--ink-muted)]">Finishing…</p>
-      )}
+    <main className="h-dvh overflow-hidden">
+      <SwipeDeck
+        card={card}
+        index={index}
+        total={order.length}
+        canUndo={history.length > 0}
+        onSwipe={onSwipe}
+        onUndo={onUndo}
+        topNote={
+          <p className="text-center text-[10px] leading-tight text-[var(--ink-muted)] sm:text-xs">
+            {filling
+              ? "Filling remaining cards…"
+              : "Therapist shortcut: Ctrl+Option+K fills remaining cards randomly."}
+          </p>
+        }
+      />
     </main>
   );
 }

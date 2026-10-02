@@ -84,7 +84,7 @@ export default function PublicSwipePage() {
 
   if (error) {
     return (
-      <main className="mx-auto min-h-dvh max-w-lg px-4 py-16 text-center">
+      <main className="mx-auto flex h-dvh max-w-lg flex-col justify-center px-4 text-center">
         <p className="text-[var(--accent-text)]">{error}</p>
       </main>
     );
@@ -92,7 +92,7 @@ export default function PublicSwipePage() {
 
   if (!ready) {
     return (
-      <main className="mx-auto min-h-dvh max-w-lg px-4 py-16 text-[var(--ink-muted)]">
+      <main className="flex h-dvh items-center justify-center px-4 text-[var(--ink-muted)]">
         Loading…
       </main>
     );
@@ -100,7 +100,7 @@ export default function PublicSwipePage() {
 
   if (done) {
     return (
-      <main className="mx-auto flex min-h-dvh max-w-lg flex-col justify-center px-4 py-16 text-center">
+      <main className="mx-auto flex h-dvh max-w-lg flex-col justify-center px-4 text-center">
         <p className="tracking-[0.2em] uppercase text-[var(--accent-text)]">
           tint
         </p>
@@ -113,23 +113,29 @@ export default function PublicSwipePage() {
     );
   }
 
+  if (!card) {
+    return (
+      <main className="flex h-dvh items-center justify-center px-4 text-[var(--ink-muted)]">
+        Finishing…
+      </main>
+    );
+  }
+
   return (
-    <main className="mx-auto min-h-dvh max-w-lg px-4 py-8">
-      <p className="mb-2 text-center text-xs tracking-[0.2em] uppercase text-[var(--accent-text)]">
-        tint · {name}
-      </p>
-      {card ? (
-        <SwipeDeck
-          card={card}
-          index={index}
-          total={order.length}
-          canUndo={history.length > 0}
-          onSwipe={onSwipe}
-          onUndo={onUndo}
-        />
-      ) : (
-        <p className="text-[var(--ink-muted)]">Finishing…</p>
-      )}
+    <main className="h-dvh overflow-hidden">
+      <SwipeDeck
+        card={card}
+        index={index}
+        total={order.length}
+        canUndo={history.length > 0}
+        onSwipe={onSwipe}
+        onUndo={onUndo}
+        topNote={
+          <p className="text-center text-[10px] tracking-[0.2em] uppercase text-[var(--accent-text)] sm:text-xs">
+            tint · {name}
+          </p>
+        }
+      />
     </main>
   );
 }

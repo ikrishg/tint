@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import type { Card, SwipeValue } from "@/lib/types";
 import { DIMENSION_LABELS } from "@/lib/content";
 
@@ -11,6 +11,8 @@ type Props = {
   canUndo: boolean;
   onSwipe: (value: SwipeValue) => void;
   onUndo: () => void;
+  /** Optional strip above the progress row (e.g. therapist shortcut hint). */
+  topNote?: ReactNode;
 };
 
 const EXIT = 420;
@@ -22,6 +24,7 @@ export function SwipeDeck({
   canUndo,
   onSwipe,
   onUndo,
+  topNote,
 }: Props) {
   const start = useRef<{ x: number; y: number } | null>(null);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
@@ -79,8 +82,10 @@ export function SwipeDeck({
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between text-sm text-[var(--ink-muted)]">
+    <div className="mx-auto flex h-dvh w-[96vw] max-w-[96vw] flex-col px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-[max(0.5rem,env(safe-area-inset-top))] sm:px-5">
+      {topNote ? <div className="shrink-0 pb-2">{topNote}</div> : null}
+
+      <div className="flex shrink-0 items-center justify-between text-sm text-[var(--ink-muted)]">
         <span>
           {index + 1} / {total}
         </span>
@@ -88,10 +93,13 @@ export function SwipeDeck({
       </div>
 
       <div
-        className={`relative touch-none select-none rounded-3xl border border-[var(--border)] bg-[var(--bg-elevated)] p-8 shadow-2xl ${
-          exiting ? "transition-transform duration-200 ease-out" : "transition-transform duration-150 ease-out"
+        className={`relative mt-3 mb-3 min-h-0 flex-1 touch-none select-none overflow-hidden rounded-3xl border border-[var(--border)] bg-[var(--bg-elevated)] p-6 shadow-2xl sm:p-8 ${
+          exiting
+            ? "transition-transform duration-200 ease-out"
+            : "transition-transform duration-150 ease-out"
         }`}
         style={{
+          width: "100%",
           transform: `translate(${offset.x}px, ${offset.y}px) rotate(${offset.x / 40}deg)`,
         }}
         onPointerDown={(e) => {
@@ -125,21 +133,25 @@ export function SwipeDeck({
         }}
       >
         {hint && (
-          <p className="absolute top-4 left-1/2 -translate-x-1/2 text-xs tracking-[0.2em] uppercase text-[var(--accent-text)]">
+          <p className="absolute top-4 left-1/2 z-10 -translate-x-1/2 text-xs tracking-[0.2em] uppercase text-[var(--accent-text)]">
             {hint === "dislike" ? "Dislike" : hint === "like" ? "Like" : "Love"}
           </p>
         )}
-        <h2 className="mt-4 text-2xl sm:text-3xl text-[var(--ink)]">{card.title}</h2>
-        <p className="mt-4 text-base sm:text-lg leading-relaxed text-[var(--ink-muted)]">
-          {card.prompt}
-        </p>
+        <div className="flex h-full flex-col justify-center">
+          <h2 className="text-[clamp(1.5rem,4.5vw,2.25rem)] leading-tight text-[var(--ink)]">
+            {card.title}
+          </h2>
+          <p className="mt-4 text-[clamp(1rem,3.2vw,1.25rem)] leading-relaxed text-[var(--ink-muted)]">
+            {card.prompt}
+          </p>
+        </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-2 sm:gap-3 text-center text-sm">
+      <div className="grid shrink-0 grid-cols-3 gap-2 text-center text-sm sm:gap-3">
         <button
           type="button"
           disabled={exiting}
-          className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] px-2 sm:px-3 py-3 font-medium text-[var(--dislike)] disabled:opacity-40"
+          className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] px-2 py-3 font-medium text-[var(--dislike)] disabled:opacity-40 sm:px-3"
           onClick={() => commit("dislike")}
         >
           ← Dislike
@@ -147,7 +159,7 @@ export function SwipeDeck({
         <button
           type="button"
           disabled={exiting}
-          className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] px-2 sm:px-3 py-3 font-medium text-[var(--love)] disabled:opacity-40"
+          className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] px-2 py-3 font-medium text-[var(--love)] disabled:opacity-40 sm:px-3"
           onClick={() => commit("love")}
         >
           ↑ Love
@@ -155,7 +167,7 @@ export function SwipeDeck({
         <button
           type="button"
           disabled={exiting}
-          className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] px-2 sm:px-3 py-3 font-medium text-[var(--like)] disabled:opacity-40"
+          className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] px-2 py-3 font-medium text-[var(--like)] disabled:opacity-40 sm:px-3"
           onClick={() => commit("like")}
         >
           Like →
@@ -166,7 +178,7 @@ export function SwipeDeck({
         type="button"
         disabled={!canUndo || exiting}
         onClick={onUndo}
-        className="text-sm text-[var(--ink-muted)] disabled:opacity-30"
+        className="mt-2 shrink-0 py-1 text-sm text-[var(--ink-muted)] disabled:opacity-30"
       >
         Undo last swipe
       </button>
