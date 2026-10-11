@@ -46,19 +46,6 @@ export default function CardsPage() {
     void load();
   }, [id, router]);
 
-  useEffect(() => {
-    function onKey(e: KeyboardEvent) {
-      // Use e.code — on macOS Option+K changes e.key to ˚, so key === "k" never matches.
-      if (e.code === "KeyK" && e.ctrlKey && e.altKey) {
-        e.preventDefault();
-        e.stopPropagation();
-        void skipRandom();
-      }
-    }
-    window.addEventListener("keydown", onKey, true);
-    return () => window.removeEventListener("keydown", onKey, true);
-  });
-
   const cardsById = useMemo(() => {
     const map = new Map<string, Card>();
     for (const c of cards) map.set(c.id, c);
@@ -93,6 +80,19 @@ export default function CardsPage() {
       setFilling(false);
     }
   }
+
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      // Use e.code — on macOS Option+K changes e.key to ˚, so key === "k" never matches.
+      if (e.code === "KeyK" && e.ctrlKey && e.altKey) {
+        e.preventDefault();
+        e.stopPropagation();
+        void skipRandom();
+      }
+    }
+    window.addEventListener("keydown", onKey, true);
+    return () => window.removeEventListener("keydown", onKey, true);
+  });
 
   function onSwipe(value: SwipeValue) {
     if (!card) return;
@@ -133,6 +133,7 @@ export default function CardsPage() {
   return (
     <main className="h-dvh overflow-hidden">
       <SwipeDeck
+        key={card.id}
         card={card}
         index={index}
         total={order.length}

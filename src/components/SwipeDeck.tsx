@@ -33,14 +33,6 @@ export function SwipeDeck({
   const locked = useRef(false);
 
   useEffect(() => {
-    locked.current = false;
-    setExiting(false);
-    setOffset({ x: 0, y: 0 });
-    setHint(null);
-    start.current = null;
-  }, [card.id]);
-
-  useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if (locked.current) return;
       if (e.key === "ArrowLeft") commit("dislike");

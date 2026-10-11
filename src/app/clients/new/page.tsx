@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AppShell } from "@/components/AppShell";
 
@@ -115,9 +116,9 @@ export default function NewClientPage() {
             Open client
           </button>
           <p>
-            <a href="/clients" className="text-sm text-[var(--accent-text)]">
+            <Link href="/clients" className="text-sm text-[var(--accent-text)]">
               Go to clients
-            </a>
+            </Link>
           </p>
         </div>
       ) : (

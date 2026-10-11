@@ -124,6 +124,7 @@ export default function PublicSwipePage() {
   return (
     <main className="h-dvh overflow-hidden">
       <SwipeDeck
+        key={card.id}
         card={card}
         index={index}
         total={order.length}
